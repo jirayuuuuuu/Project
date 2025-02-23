@@ -1,75 +1,38 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import Layout from './../Template/Layout';
-
-const ProductCard = ({ name, price, description, image, onAddToCart }) => {
-  const [quantity, setQuantity] = useState(0);
-
-  const increaseQuantity = () => setQuantity(quantity + 1);
-  const decreaseQuantity = () => setQuantity(quantity > 0 ? quantity - 1 : 0);
-
-  return (
-    <div className="p-4 border border-gray-200 rounded-xl shadow-md bg-white flex flex-col items-center  w-full  transition-transform hover:scale-105 hover:shadow-lg">
-      <img
-  src={image}
-  alt={name}
-  className="w-[200px] h-[200px] object-cover rounded-lg mb-3"
-/>
-      <p className="font-semibold text-lg text-gray-800 text-center mb-1">
-        {name}
-      </p>
-      <p className="text-gray-600 text-sm mb-1">
-        Price: <span className="text-gray-800 font-medium">${price}</span>
-      </p>
-      <p className="text-gray-500 text-xs text-center mb-3 line-clamp-2">
-        {description}
-      </p>
-      <div className="flex items-center justify-center gap-3 mb-3">
-        <button
-          className="bg-red-500 text-white px-3 py-1.5 rounded-md hover:bg-red-600 shadow transition"
-          onClick={decreaseQuantity}
-        >
-          -
-        </button>
-        <span className="text-lg font-semibold px-2">{quantity}</span>
-        <button
-          className="bg-green-500 text-white px-3 py-1.5 rounded-md hover:bg-green-600 shadow transition"
-          onClick={increaseQuantity}
-        >
-          +
-        </button>
-      </div>
-      <button
-        className="w-full bg-blue-500 text-white py-2 rounded-md hover:bg-blue-600 shadow transition"
-        onClick={() => onAddToCart({ name, price, quantity })}
-      >
-        Add to Cart
-      </button>
-    </div>
-  );
-};
+import ProductCard from './../Components/ProductCard';
 
 const Product = () => {
   const [cart, setCart] = useState([]);
   const navigate = useNavigate();
+  const location = useLocation(); // ใช้สำหรับรับค่าที่ถูกส่งมาจาก Home
 
   const handleAddToCart = (product) => {
     if (product.quantity > 0) {
-      const existingProduct = cart.find((item) => item.name === product.name);
+      // ดึงข้อมูลตะกร้าจาก localStorage
+      const existingCart = JSON.parse(localStorage.getItem('cart')) || [];
+      const existingProduct = existingCart.find((item) => item.name === product.name);
+  
+      let updatedCart;
       if (existingProduct) {
-        const updatedCart = cart.map((item) =>
-          item.name === product.name
-            ? { ...item, quantity: item.quantity + product.quantity }
-            : item
+        // อัปเดตจำนวนสินค้าในตะกร้า
+        updatedCart = existingCart.map((item) =>
+          item.name === product.name ? { ...item, quantity: item.quantity + product.quantity } : item
         );
-        setCart(updatedCart);
       } else {
-        setCart([...cart, product]);
+        updatedCart = [...existingCart, product];
       }
+  
+      // บันทึกตะกร้าลง localStorage
+      localStorage.setItem('cart', JSON.stringify(updatedCart));
+      setCart(updatedCart);
+      alert('เพิ่มสินค้าแล้ว!');
     } else {
       alert('Please select at least 1 item.');
     }
   };
+  
 
   const navigateToCart = () => {
     if (cart.length === 0) {
@@ -79,51 +42,162 @@ const Product = () => {
     navigate('/cart', { state: { cart } });
   };
 
-  const products = [
-    {
-      name: 'ขนมเปี๊ยะ',
-      price: 80,
-      description: 'Delicious Chocolate Bar',
-      image: 'src/image/ขนมเปี๊ยะ.jpg',
-    },
-    {
-      name: 'น้ำพริกแม่เล็ก',
-      price: 70,
-      description: 'Vanilla Bar with Oatmeal',
-      image: 'src/image/น้ำพริกแม่เล็ก.jpg',
-    },
-    {
-      name: 'วุ้นคุณอุ๊',
-      price: 75,
-      description: 'Sweet Strawberry Bar',
-      image: 'src/image/วุ้นคุณอุ๊.jpg',
-    },
-  ];
+  // ฟังก์ชันเลื่อนหน้าไปยังหมวดหมู่
+  useEffect(() => {
+    if (location.state?.category) {
+      const section = document.getElementById(location.state.category);
+      if (section) {
+        section.scrollIntoView({ behavior: 'smooth' });
+      }
+    }
+  }, [location.state]);
+
+  const categories = {
+    promotions: [
+      {
+        name: 'ขนมเปี๊ยะ',
+        price: 70,
+        description: 'โปรโมชั่นลดราคาพิเศษ ขนมเปี๊ยะสูตรต้นตำรับ',
+        image: 'src/image/ขนมเปี๊ยะ.jpg',
+      },
+      {
+        name: 'น้ำพริกแม่เล็ก',
+        price: 70,
+        description: 'น้ำพริกสูตรพิเศษ ขายดีอันดับ 1',
+        image: 'src/image/น้ำพริกแม่เล็ก.jpg',
+      },
+      {
+        name: 'น้ำพริกแม่ศรี',
+        price: 70,
+        description: 'น้ำพริกแม่เล็ก (สุบิน) นครปฐมต้นตำรับน้ำพริกคลุกข้าวและเครื่องพริกแกงทุกชนิดของดีประจำจังหวัดนครปฐม OTOP 5 ดาวประจำปี 2548',
+        image: 'src/image/น้ำพริกแม่ศรี/1.jpg',
+      },
+    ],
+    popular: [
+      {
+        name: 'น้ำพริกแม่เล็ก',
+        price: 70,
+        description: 'น้ำพริกสูตรพิเศษ ขายดีอันดับ 1',
+        image: 'src/image/น้ำพริกแม่เล็ก.jpg',
+      },
+      {
+        name: 'ขนมเปี๊ยะ',
+        price: 80,
+        description: 'ขนมเปี๊ยะครูสมทรง แป้งบาง ไส้แน่น',
+        image: 'src/image/ขนมเปี๊ยะ.jpg',
+      },
+      {
+        name: 'วุ้นคุณอุ๊',
+        price: 75,
+        description: 'วุ้นคุณอุ๊ ต้นตำรับจากแบรนด์ดังในนาม วุ้นคุณอุ๊ ของ จังหวัดนครปฐม สร้างชื่อเสียงในด้านรสชาติและคุณภาพ',
+        image: 'src/image/วุ้นคุณอุ๊.jpg',
+      },
+    ],
+    allProducts: [
+      {
+        name: 'ขนมเปี๊ยะ',
+        price: 80,
+        description: 'ขนมเปี๊ยะครูสมทรง แป้งบาง ไส้แน่น',
+        image: 'src/image/ขนมเปี๊ยะ.jpg',
+      },
+      {
+        name: 'น้ำพริกแม่เล็ก',
+        price: 70,
+        description: 'น้ำพริกชื่อดังของนครปฐม',
+        image: 'src/image/น้ำพริกแม่เล็ก.jpg',
+      },
+      {
+        name: 'น้ำพริกแม่ศรี',
+        price: 70,
+        description: 'น้ำพริกแม่เล็ก (สุบิน) นครปฐมต้นตำรับน้ำพริกคลุกข้าวและเครื่องพริกแกงทุกชนิดของดีประจำจังหวัดนครปฐม OTOP 5 ดาวประจำปี 2548',
+        image: 'src/image/น้ำพริกแม่ศรี/1.jpg',
+      },
+      {
+        name: 'วุ้นคุณอุ๊',
+        price: 75,
+        description: 'วุ้นคุณอุ๊ ต้นตำรับจากแบรนด์ดังในนาม วุ้นคุณอุ๊ ของ จังหวัดนครปฐม สร้างชื่อเสียงในด้านรสชาติและคุณภาพ',
+        image: 'src/image/วุ้นคุณอุ๊.jpg',
+      },
+      {
+        name: 'ส้มโอนครชัยศรี',
+        price: 75,
+        description: 'ส้มโอนครชัยศรีเป็นผลไม้ขึ้นชื่อของจังหวัดนครปฐมประกอบด้วยส้มโอสองสายพันธุ์หลักคือ พันธุ์ทองดี และ พันธุ์ขาวน้ำผึ้ง',
+        image: 'src/image/ส้มโอนครชัยศรี/2.jpg',
+      },
+      {
+        name: 'หมูแผ่น',
+        price: 75,
+        description: 'หมูแผ่นเป็นของฝากยอดนิยมจากจังหวัดนครปฐม มีรสชาติอร่อย หอมหวาน และกรอบกำลังดี เหมาะสำหรับรับประทานเป็นของว่างหรือทานคู่กับข้าวต้ม',
+        image: 'src/image/หมูแผ่น/2.jpg',
+      },
+      {
+        name: 'กุนเชียงหมู',
+        price: 75,
+        description: 'กุนเชียงหมูเป็นหนึ่งในของฝากขึ้นชื่อจากจังหวัดนครปฐม มีรสชาติอร่อย เนื้อแน่น และผลิตด้วยกรรมวิธีที่สะอาดปลอดภัย',
+        image: 'src/image/กุนเชียงหมู/1.jpg',
+      },
+      {
+        name: 'ข้าวหลาม',
+        price: 75,
+        description: 'ข้าวหลามเป็นของฝากขึ้นชื่อจากจังหวัดนครปฐม มีรสชาติหวานมัน กลิ่นหอม และเนื้อข้าวเหนียวนุ่ม',
+        image: 'src/image/ข้าวหลาม/1.jpg',
+      },
+      {
+        name: 'เค้กภคกรณ์',
+        price: 75,
+        description: 'ภคกรณ์เบเกอรี่เป็นร้านขนมชื่อดังในจังหวัดนครปฐม มีชื่อเสียงจากเมนูเค้กลอดช่องที่ได้รับรางวัลชนะเลิศอันดับ 1 ของประเทศ',
+        image: 'src/image/เค้กภคกรณ์/1.jpg',
+      },
+      {
+        name: 'ขนมตาลป้าไข่',
+        price: 75,
+        description: 'ขนมตาลป้าไข่เป็นร้านขนมไทยดั้งเดิมที่มีชื่อเสียงในตลาดน้ำดอนหวาย จังหวัดนครปฐม ร้านนี้เปิดดำเนินการมากว่า 60 ปี',
+        image: 'src/image/ขนมตาลป้าไข่/2.png',
+      },
+    ],
+  };
 
   return (
     <Layout>
-      <div className="p-4 border-4 border-blue-500 rounded-lg bg-gradient-to-b from-blue-50 to-blue-100 shadow-md">
-        <h1 className="text-3xl font-bold mb-5 text-center text-blue-600">
-          Products
-        </h1>
-        <hr className="mb-4 border-blue-400" />
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {products.map((product, index) => (
-            <ProductCard
-              key={index}
-              name={product.name}
-              price={product.price}
-              description={product.description}
-              image={product.image}
-              onAddToCart={handleAddToCart}
-            />
-          ))}
+      <div className="p-4 bg-gray-100 min-h-screen">
+        <h1 className="text-3xl font-bold mb-5 text-center text-yellow-500">หมวดหมู่สินค้าทั้งหมด</h1>
+        <hr className="mb-4 border-yellow-400" />
+
+        {/* หมวดโปรโมชั่น */}
+        <div id="promotions" className="bg-red-50 border border-red-300 p-4 rounded-lg shadow-md mb-6">
+          <h2 className="text-2xl font-semibold text-red-600 mb-3">โปรโมชั่น</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {categories.promotions.map((product, index) => (
+              <ProductCard key={index} {...product} onAddToCart={handleAddToCart} />
+            ))}
+          </div>
         </div>
+
+        {/* หมวดสินค้ายอดนิยม */}
+        <div id="popular" className="bg-blue-50 border border-blue-300 p-4 rounded-lg shadow-md mb-6">
+          <h2 className="text-2xl font-semibold text-blue-600 mb-3">สินค้ายอดนิยม</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {categories.popular.map((product, index) => (
+              <ProductCard key={index} {...product} onAddToCart={handleAddToCart} />
+            ))}
+          </div>
+        </div>
+
+        {/* หมวดสินค้าทั้งหมด */}
+        <div id="allProducts" className="bg-green-50 border border-green-300 p-4 rounded-lg shadow-md">
+          <h2 className="text-2xl font-semibold text-green-600 mb-3">สินค้าทั้งหมด</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {categories.allProducts.map((product, index) => (
+              <ProductCard key={index} {...product} onAddToCart={handleAddToCart} />
+            ))}
+          </div>
+        </div>
+
         <button
-          className="w-full mt-5 bg-green-500 text-white py-2.5 rounded-lg hover:bg-green-600 shadow transition"
+          className="w-full mt-6 bg-green-500 text-white py-2.5 rounded-lg hover:bg-green-600 shadow transition"
           onClick={navigateToCart}
         >
-          Go to Cart
+          ไปที่ตะกร้า
         </button>
       </div>
     </Layout>

@@ -2,9 +2,9 @@ import React from 'react';
 
 function Footer() {
   return (
-    <footer className="bg-red-600 text-white py-4">
+    <footer className="bg-red-500 text-white py-4">
       <div className="container mx-auto text-center">
-        <p>&copy; Copyright 2025: Tesa Cafe, All Rights Reserved</p>
+        <p>&#9993; Email : Jirayujele2562@gmail.com &#129293;</p>
       </div>
     </footer>
   );

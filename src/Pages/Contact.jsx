@@ -14,7 +14,7 @@ const Contact = () => {
           <h2 className="text-3xl font-semibold mb-4 text-blue-500">Get in Touch</h2>
           <p className="mb-2 text-lg">📍 Address: 90 ถนน เทศา ตำบลพระปฐมเจดีย์ อำเภอเมืองนครปฐม นครปฐม 73000</p>
           <p className="mb-2 text-lg">📞 Phone: +6634252790</p>
-          <p className="mb-2 text-lg">✉️ Email: contact@bakery.com</p>
+          <p className="mb-2 text-lg">&#9993; Email : Jirayujele2562@gmail.com</p>
           <p className="mb-2 text-lg">⏰ Open Hours: Mon-Sat, 8:00 น. - 18:00 น.</p>
         </div>
 
